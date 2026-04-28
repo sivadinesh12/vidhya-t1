@@ -1,0 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+  --ink: #0d1b2a;
+  --paper: #fdf8f0;
+  --gold: #c9922a;
+  --teal: #1a7f74;
+  /* ... rest of your variables */
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(--ink); }

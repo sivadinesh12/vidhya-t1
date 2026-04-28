@@ -1,0 +1,131 @@
+/* We reuse the core layout classes from the login page */
+.login-wrap {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.login-left.signup-left {
+  background: var(--teal); /* Different background for signup */
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px;
+}
+
+.login-left.signup-left::before {
+  content: '';
+  position: absolute;
+  top: -120px; right: -120px;
+  width: 480px; height: 480px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(253,248,240,0.15) 0%, transparent 70%);
+}
+
+.login-left.signup-left::after {
+  content: '';
+  position: absolute;
+  bottom: -80px; left: -80px;
+  width: 320px; height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(201,146,42,0.2) 0%, transparent 70%);
+}
+
+/* The rest is identical to ensure layout consistency */
+.brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 40px;
+  padding: 8px 18px;
+  margin-bottom: 36px;
+  width: fit-content;
+}
+
+.brand-badge-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--gold-light);
+  animation: pulse 2s infinite;
+}
+
+.brand-badge span { color: white; font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; }
+
+.login-headline {
+  font-family: 'Playfair Display', serif;
+  font-size: 56px;
+  line-height: 1.1;
+  color: var(--paper);
+  font-weight: 900;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.login-headline em {
+  font-style: italic;
+  color: var(--gold-light);
+}
+
+.login-sub {
+  color: rgba(255,255,255,0.8);
+  font-size: 16px;
+  line-height: 1.7;
+  max-width: 360px;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 48px;
+}
+
+.login-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 48px;
+  background: var(--paper);
+  position: relative;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  z-index: 1;
+}
+
+.login-card h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+
+.login-card p { color: var(--muted); font-size: 15px; margin-bottom: 36px; }
+.form-group { margin-bottom: 20px; }
+.form-label { display: block; font-size: 13px; font-weight: 600; color: var(--slate); margin-bottom: 8px; letter-spacing: 0.5px; text-transform: uppercase; }
+.form-input { width: 100%; padding: 14px 18px; border: 1.5px solid var(--border); border-radius: 10px; background: white; font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--ink); transition: border-color 0.2s, box-shadow 0.2s; outline: none; }
+.form-input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(26,127,116,0.12); }
+.form-input::placeholder { color: #bbb; }
+
+.btn-primary { width: 100%; padding: 15px; background: var(--ink); color: white; border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.2s, transform 0.1s; letter-spacing: 0.3px; }
+.btn-primary:hover { background: var(--slate); transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0); }
+
+.divider { display: flex; align-items: center; gap: 12px; margin: 24px 0; color: var(--muted); font-size: 13px; }
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+.btn-secondary { width: 100%; padding: 14px; background: white; color: var(--ink); border: 1.5px solid var(--border); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: border-color 0.2s, background 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.btn-secondary:hover { border-color: var(--teal); background: rgba(26,127,116,0.04); }
+
+.signup-row { text-align: center; margin-top: 20px; font-size: 14px; color: var(--muted); }
+.signup-row button { background: none; border: none; color: var(--teal); font-weight: 600; cursor: pointer; font-size: 14px; font-family: 'DM Sans', sans-serif; }
+
+@media (max-width: 900px) {
+  .login-wrap { grid-template-columns: 1fr; }
+  .login-left.signup-left { display: none; }
+}
