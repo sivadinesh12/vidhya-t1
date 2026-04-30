@@ -14,7 +14,8 @@ import Flashcards  from "./components/pages/Flashcards";
 import StudyPlanner from "./components/pages/StudyPlanner";
 import Progress    from "./components/pages/Progress";
 
-const GOOGLE_CLIENT_ID = "YOUR_ID.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID =
+  "803792661988-1mfd36s2pbpi5i54bb2hl9r167061cei.apps.googleusercontent.com";
 
 export default function App() {
   const [user, setUser] = useState(null);
