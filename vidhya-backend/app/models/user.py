@@ -1,4 +1,4 @@
-"""
+""""
 app/models/user.py  -  User Document Model (Beanie ODM)
 Passwords stored as bcrypt hashes. Never plain text.
 """
@@ -23,11 +23,11 @@ class TargetExam(str, Enum):
     OTHER        = "OTHER"
 
 class User(Document):
-    name     : str = Field(..., min_length=2, max_length=60)
-    email    : Indexed(EmailStr, unique=True)
-    password : Optional[str] = None
-    role     : Role = Role.user
-    avatar   : Optional[str] = None
+    name        : str = Field(..., min_length=2, max_length=60)
+    email       : Indexed(EmailStr, unique=True)
+    password    : Optional[str] = None
+    role        : Role = Role.user
+    avatar      : Optional[str] = None
     target_exam : Optional[TargetExam] = TargetExam.NEET
     target_year : Optional[int] = None
     google_id   : Optional[str] = None
@@ -49,16 +49,25 @@ class User(Document):
         return pwd_context.verify(plain, self.password)
 
     def to_safe_dict(self) -> dict:
-        data = self.model_dump()
-        data.pop("password", None)
+        data = {}
         data["id"] = str(self.id)
+        data["name"] = self.name
+        data["email"] = self.email
+        data["role"] = self.role.value if hasattr(self.role, "value") else self.role
+        data["avatar"] = self.avatar
+        data["target_exam"] = self.target_exam.value if self.target_exam and hasattr(self.target_exam, "value") else self.target_exam
+        data["target_year"] = self.target_year
+        data["is_active"] = self.is_active
+        data["last_login"] = self.last_login.isoformat() if self.last_login else None
+        data["created_at"] = self.created_at.isoformat() if self.created_at else None
+        data["updated_at"] = self.updated_at.isoformat() if self.updated_at else None
         return data
 
 # ── Request/Response schemas ──────────────────────────────────────────────────
 class UserSignupSchema(BaseModel):
-    name        : str      = Field(..., min_length=2, max_length=60)
+    name        : str = Field(..., min_length=2, max_length=60)
     email       : EmailStr
-    password    : str      = Field(..., min_length=6)
+    password    : str = Field(..., min_length=6)
     target_exam : Optional[TargetExam] = TargetExam.NEET
     target_year : Optional[int] = Field(default=None, ge=2024, le=2030)
 
@@ -70,9 +79,9 @@ class GoogleAuthSchema(BaseModel):
     credential: str
 
 class UserUpdateSchema(BaseModel):
-    name        : Optional[str]        = Field(default=None, min_length=2, max_length=60)
+    name        : Optional[str] = Field(default=None, min_length=2, max_length=60)
     target_exam : Optional[TargetExam] = None
-    target_year : Optional[int]        = Field(default=None, ge=2024, le=2030)
+    target_year : Optional[int] = Field(default=None, ge=2024, le=2030)
 
 class RoleUpdateSchema(BaseModel):
     role: Role

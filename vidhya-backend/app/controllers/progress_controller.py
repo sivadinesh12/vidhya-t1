@@ -18,7 +18,7 @@ async def _get_or_create(user_id: str) -> Progress:
 
 async def get_progress(current_user: User):
     prog = await _get_or_create(str(current_user.id))
-    return success_response("Progress fetched.", prog.model_dump())
+    return success_response("Progress fetched.", prog.dict())
 
 
 async def add_chapter(body: AddChapterSchema, current_user: User):
@@ -27,7 +27,7 @@ async def add_chapter(body: AddChapterSchema, current_user: User):
         raise HTTPException(status_code=409, detail="This chapter is already tracked.")
     prog.chapters.append(ChapterProgress(chapter_name=body.chapter_name, subject=body.subject))
     await prog.save()
-    return success_response("Chapter added.", prog.model_dump(), status=201)
+    return success_response("Chapter added.", prog.dict(), status=201)
 
 
 async def update_chapter(chapter_id: str, body: UpdateChapterSchema, current_user: User):
@@ -38,7 +38,7 @@ async def update_chapter(chapter_id: str, body: UpdateChapterSchema, current_use
     chapter.completion_pct = body.completion_pct
     chapter.last_studied   = datetime.utcnow()
     await prog.save()
-    return success_response("Chapter updated.", prog.model_dump())
+    return success_response("Chapter updated.", prog.dict())
 
 
 async def update_streak(body: UpdateStreakSchema, current_user: User):
@@ -63,9 +63,9 @@ async def update_streak(body: UpdateStreakSchema, current_user: User):
             m.achieved = True; m.achieved_at = datetime.utcnow()
 
     await prog.save()
-    return success_response("Streak updated.", prog.model_dump())
+    return success_response("Streak updated.", prog.dict())
 
 
 async def get_leaderboard():
     top = await Progress.find().sort("-current_streak").limit(20).to_list()
-    return success_response("Leaderboard fetched.", [p.model_dump() for p in top])
+    return success_response("Leaderboard fetched.", [p.dict() for p in top])
