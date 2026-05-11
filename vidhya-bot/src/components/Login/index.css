@@ -1,3 +1,33 @@
+/* --- SINGLE REPLACEMENT FOR ALL BRAND-BADGE STYLES --- */
+.brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: transparent !important; /* Forces no background */
+  border: none !important;           /* Forces no border */
+  padding: 0;
+  margin-bottom: 36px;
+  width: fit-content;
+  box-shadow: none;                  /* Removes any hidden shadows */
+}
+
+.brand-logo-img {
+  height: 100px; /* Reduced from 100px to look cleaner, adjust as needed */
+  width: auto;
+  display: block;
+  /* Turns black text to white while keeping icon colors vibrant */
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* Remove or comment out any ".brand-badge span" or ".brand-badge-dot" 
+   styles as they are no longer needed for an image-based logo */
+.brand-logo-img {
+  height: 360px; /* Adjust size as needed */
+  width: 120;
+  display: auto;
+  /* Use this to turn the black text white if your image still has black text */
+
+}
 .login-wrap {
   min-height: 100vh;
   display: grid;
@@ -31,19 +61,6 @@
   border-radius: 50%;
   background: radial-gradient(circle, rgba(26,127,116,0.2) 0%, transparent 70%);
 }
-
-.brand-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  background: rgba(201,146,42,0.15);
-  border: 1px solid rgba(201,146,42,0.3);
-  border-radius: 40px;
-  padding: 8px 18px;
-  margin-bottom: 36px;
-  width: fit-content;
-}
-
 .brand-badge-dot {
   width: 8px; height: 8px;
   border-radius: 50%;
@@ -60,11 +77,11 @@
 
 .login-headline {
   font-family: 'Playfair Display', serif;
-  font-size: 56px;
+  font-size: 46px;
   line-height: 1.1;
   color: var(--paper);
-  font-weight: 900;
-  margin-bottom: 20px;
+  font-weight: 50;
+  margin-bottom: 10px;
   position: relative;
   z-index: 1;
 }

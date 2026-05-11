@@ -1,30 +1,85 @@
 import React, { useState } from "react";
 import { useGoogleLogin } from "@react-oauth/google";
-import AppleSignin from "react-apple-signin-auth";
 import { useNavigate } from "react-router-dom"; 
+import vidyaLogo from "../assets/logo.png"; // Imported the logo
 import "./index.css"; 
 
 export default function Signup() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [mobile, setMobile] = useState(""); 
+  const [educationLevel, setEducationLevel] = useState(""); 
+  
+  // New states for conditional dropdowns
+  const [schoolClass, setSchoolClass] = useState("");
+  const [schoolBoard, setSchoolBoard] = useState(""); // State for CBSE / TN State
+  const [collegeDepartment, setCollegeDepartment] = useState("");
+
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
   const navigate = useNavigate();
 
+  // Handle main education level change to reset sub-selections
+  const handleEducationChange = (e) => {
+    setEducationLevel(e.target.value);
+    setSchoolClass("");
+    setSchoolBoard("");
+    setCollegeDepartment("");
+  };
+
   // --- STANDARD SIGNUP ---
   const handleSignup = (e) => {
     e.preventDefault();
-    if (!name || !email || !password) {
-      setError("Please fill in all fields.");
+    
+    // Basic field validation
+    if (!name || !email || !mobile || !password || !educationLevel) {
+      setError("Please fill in all basic fields.");
       return;
     }
+
+    // Conditional field validation
+    if (educationLevel === "school") {
+      if (!schoolClass) {
+        setError("Please select your class.");
+        return;
+      }
+      if (!schoolBoard) {
+        setError("Please select your syllabus board.");
+        return;
+      }
+    }
+    
+    if (educationLevel === "college" && !collegeDepartment) {
+      setError("Please select your department category.");
+      return;
+    }
+
+    // Basic 10-digit mobile number validation
+    const mobileRegex = /^[0-9]{10}$/;
+    if (!mobileRegex.test(mobile)) {
+      setError("Please enter a valid 10-digit mobile number.");
+      return;
+    }
+
     if (password.length < 6) {
       setError("Password must be at least 6 characters.");
       return;
     }
     
-    // Logic to save user would go here
+    // Logic to save user would go here.
+    const signupData = { 
+      name, 
+      email, 
+      mobile, 
+      password, 
+      educationLevel,
+      // Only include sub-data if relevant
+      ...(educationLevel === "school" && { schoolClass, schoolBoard }),
+      ...(educationLevel === "college" && { collegeDepartment })
+    };
+
+    console.log("Signup Data:", signupData);
     setError("");
     setIsSuccess(true);
     navigate("/home"); 
@@ -44,14 +99,6 @@ export default function Signup() {
     },
   });
 
-  // --- APPLE SIGNUP HANDLER ---
-  const handleAppleSuccess = (response) => {
-    console.log("Apple Signup Success:", response);
-    // In a real app, send response.authorization.id_token to your backend
-    setError("");
-    setIsSuccess(true);
-  };
-
   if (isSuccess) {
     return (
       <div className="login-wrap" style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
@@ -67,9 +114,13 @@ export default function Signup() {
   return (
     <div className="login-wrap">
       <div className="login-left">
+        {/* UPDATED LOGO SECTION */}
         <div className="brand-badge">
-          <div className="brand-badge-dot" />
-          <span>vidya</span>
+          <img 
+            src={vidyaLogo} 
+            alt="Vidhya Logo" 
+            className="brand-logo-img" 
+          />
         </div>
         <h1 className="login-headline">Start Your<br /><em>Success</em><br />Story.</h1>
         <p className="login-sub">Join thousands of students and get access to curated study materials, mock tests, and analytics.</p>
@@ -105,6 +156,92 @@ export default function Signup() {
             </div>
 
             <div className="form-group">
+              <label className="form-label">Mobile Number</label>
+              <input 
+                className="form-input" 
+                type="tel" 
+                placeholder="Enter 10-digit mobile number" 
+                value={mobile}
+                onChange={(e) => setMobile(e.target.value.replace(/\D/g, ""))} 
+                maxLength="10"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">What are you studying for?</label>
+              <select 
+                className="form-input" 
+                value={educationLevel}
+                onChange={handleEducationChange}
+                style={{ cursor: "pointer", appearance: "auto" }} 
+              >
+                <option value="" disabled>Select an option</option>
+                <option value="school">School</option>
+                <option value="college">College</option>
+                <option value="neet">NEET</option>
+                <option value="jee">JEE</option>
+              </select>
+            </div>
+
+            {/* CONDITIONAL DROPDOWNS: SCHOOL */}
+            {educationLevel === "school" && (
+              <>
+                <div className="form-group fade-up">
+                  <label className="form-label">Select Syllabus</label>
+                  <select 
+                    className="form-input" 
+                    value={schoolBoard}
+                    onChange={(e) => setSchoolBoard(e.target.value)}
+                    style={{ cursor: "pointer", appearance: "auto" }} 
+                  >
+                    <option value="" disabled>Choose your syllabus</option>
+                    <option value="cbse">CBSE</option>
+                    <option value="tn_state">TN State Syllabus</option>
+                  </select>
+                </div>
+
+                <div className="form-group fade-up">
+                  <label className="form-label">Select Class</label>
+                  <select 
+                    className="form-input" 
+                    value={schoolClass}
+                    onChange={(e) => setSchoolClass(e.target.value)}
+                    style={{ cursor: "pointer", appearance: "auto" }} 
+                  >
+                    <option value="" disabled>Choose your class</option>
+                    <option value="6th">6th Standard</option>
+                    <option value="7th">7th Standard</option>
+                    <option value="8th">8th Standard</option>
+                    <option value="9th">9th Standard</option>
+                    <option value="10th">10th Standard</option>
+                    <option value="11th">11th Standard</option>
+                    <option value="12th">12th Standard</option>
+                  </select>
+                </div>
+              </>
+            )}
+
+            {/* CONDITIONAL DROPDOWN: COLLEGE */}
+            {educationLevel === "college" && (
+              <div className="form-group fade-up">
+                <label className="form-label">Select Department Category</label>
+                <select 
+                  className="form-input" 
+                  value={collegeDepartment}
+                  onChange={(e) => setCollegeDepartment(e.target.value)}
+                  style={{ cursor: "pointer", appearance: "auto" }} 
+                >
+                  <option value="" disabled>Choose your department</option>
+                  <option value="engineering">Engineering / Technology</option>
+                  <option value="arts_science">Arts & Science</option>
+                  <option value="commerce">Commerce / Management</option>
+                  <option value="medical">Medical / Health Sciences</option>
+                  <option value="law">Law</option>
+                </select>
+              </div>
+            )}
+
+            <div className="form-group">
               <label className="form-label">Create Password</label>
               <input 
                 className="form-input" 
@@ -121,7 +258,7 @@ export default function Signup() {
           <div className="divider">or continue with</div>
 
           {/* Social Logins Container */}
-          <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', marginBottom: '20px' }}>
             
             {/* GOOGLE BUTTON */}
             <button type="button" className="btn-secondary" style={{ flex: 1 }} onClick={() => googleSignup()}>
@@ -134,30 +271,6 @@ export default function Signup() {
               Google
             </button>
 
-            {/* APPLE BUTTON */}
-            <AppleSignin
-              authOptions={{
-                clientId: 'com.yourdomain.vidhya', // REPLACE THIS with your Apple Service ID
-                scope: 'email name',
-                redirectURI: 'https://yourdomain.com/login', // Must match Apple config
-                state: 'state',
-                nonce: 'nonce',
-                usePopup: true
-              }}
-              uiType="dark"
-              className="apple-auth-btn"
-              onSuccess={handleAppleSuccess}
-              onError={(error) => console.error(error)}
-              render={(props) => (
-                <button type="button" className="btn-secondary" style={{ flex: 1 }} {...props}>
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 170 170" width="18" height="18">
-                    <path fill="#000000" d="M117.89 65.59c-.58-15.65 12.8-23.41 13.38-23.78-7.29-10.66-18.66-12.16-22.7-12.35-9.68-.97-18.9 5.71-23.82 5.71-4.91 0-12.56-5.58-20.65-5.43-10.51.15-20.2 6.11-25.62 15.54-10.97 19.04-2.82 47.16 7.84 62.59 5.21 7.54 11.23 15.91 19.33 15.63 7.81-.29 10.74-5.04 20.21-5.04 9.44 0 12.15 5.04 20.29 4.89 8.35-.15 13.56-7.72 18.71-15.22 5.96-8.68 8.42-17.09 8.55-17.52-.18-.08-16.32-6.26-15.52-24.02z"/>
-                    <path fill="#000000" d="M114.73 24.36c4.32-5.23 7.23-12.5 6.44-19.74-6.26.25-13.88 4.18-18.32 9.38-3.95 4.62-7.46 12.08-6.52 19.16 7.02.54 14.07-3.58 18.4-8.8z"/>
-                  </svg>
-                  Apple
-                </button>
-              )}
-            />
           </div>
 
           <div className="signup-row">
