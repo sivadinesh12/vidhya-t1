@@ -1,7 +1,13 @@
 import React, { useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
+<<<<<<< HEAD
 import { useNavigate } from "react-router-dom";
 import "./index.css";
+=======
+import { useNavigate } from "react-router-dom"; 
+import vidyaLogo from "../assets/logo.png";
+import "./index.css"; 
+>>>>>>> d7ed6c73d9ed633f290074024346213cfcc914eb
 
 const API_URL = "http://localhost:5000/api/v1";
 
@@ -22,6 +28,11 @@ export default function Login({ onLogin }) {
     setError("");
     setLoading(true);
 
+<<<<<<< HEAD
+=======
+  // Function to send the Google token to your FastAPI backend
+  const handleGoogleSuccess = async (credentialResponse) => {
+>>>>>>> d7ed6c73d9ed633f290074024346213cfcc914eb
     try {
       const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
@@ -48,6 +59,7 @@ export default function Login({ onLogin }) {
     }
   };
 
+<<<<<<< HEAD
   // ── Google Login ───────────────────────────────────────────────────────────
   const handleGoogleSuccess = async (credentialResponse) => {
     setLoading(true);
@@ -95,13 +107,30 @@ export default function Login({ onLogin }) {
   return (
     <div className="login-wrap">
       {/* Left section */}
+=======
+  return (
+    <div className="login-wrap">
+      
+>>>>>>> d7ed6c73d9ed633f290074024346213cfcc914eb
       <div className="login-left">
+        {/* UPDATED LOGO SECTION */}
         <div className="brand-badge">
-          <div className="brand-badge-dot" />
-          <span>Vidhya</span>
+          <img 
+            src={vidyaLogo} // Uses the imported variable here
+            alt="Vidhya Logo" 
+            className="brand-logo-img" 
+          />
         </div>
+<<<<<<< HEAD
         <h1 className="login-headline">
           Master Every<br /><em>Exam</em> with<br />Confidence.
+=======
+
+        <h1 className="login-headline">
+          Master Every<br />
+          <span className="highlight-text">Exam</span> with<br />
+          Confidence.
+>>>>>>> d7ed6c73d9ed633f290074024346213cfcc914eb
         </h1>
       </div>
 
@@ -147,6 +176,7 @@ export default function Login({ onLogin }) {
 
           <div className="divider">or continue with</div>
 
+<<<<<<< HEAD
           <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
             {/* Google Login */}
             <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
@@ -187,6 +217,20 @@ export default function Login({ onLogin }) {
             <button onClick={() => navigate("/signup")}>
               Create free account
             </button>
+=======
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            {/* GOOGLE BUTTON: Uses official component for JWT retrieval to send to backend */}
+            <GoogleLogin 
+              onSuccess={handleGoogleSuccess} 
+              onError={() => setError("Google Auth popup closed or failed.")} 
+              theme="outline"
+              shape="rectangular"
+            />
+          </div>
+
+          <div className="signup-row">
+            New to Vidhya? <button onClick={() => navigate("/signup")} style={{ background: 'none', border: 'none', color: 'blue', cursor: 'pointer', padding: 0 }}>Create free account</button>
+>>>>>>> d7ed6c73d9ed633f290074024346213cfcc914eb
           </div>
         </div>
       </div>
