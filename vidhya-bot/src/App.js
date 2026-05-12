@@ -15,8 +15,9 @@ import StudyPlanner from "./components/pages/StudyPlanner";
 import Progress    from "./components/pages/Progress";
 
 const GOOGLE_CLIENT_ID =
-  "803792661988-1mfd36s2pbpi5i54bb2hl9r167061cei.apps.googleusercontent.com";
-
+  process.env.REACT_APP_GOOGLE_CLIENT_ID ||
+  "13111651638-rbfbn25jb9pf3ngbnvif4b07rgur8ur2.apps.googleusercontent.com";
+  
 export default function App() {
   const [user, setUser] = useState(null);
   const P = ({ el }) => user ? el : <Navigate to="/login" />;
