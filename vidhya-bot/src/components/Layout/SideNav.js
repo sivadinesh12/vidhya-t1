@@ -2,35 +2,42 @@ import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./SideNav.css";
 
-const NAV_SECTIONS = [
+const NAV = [
   {
     label: "Main",
     items: [
-      { icon: "🏠", label: "Home",          path: "/home" },
-    ]
+      { icon: "🏠", label: "Home",         path: "/home" },
+    ],
   },
   {
     label: "Study",
     items: [
-      { icon: "🏥", label: "NEET Syllabus",  path: "/neet" },
-      { icon: "⚗️",  label: "JEE Books",    path: "/jee" },
-    ]
+      { icon: "📖", label: "NCERT Books",  path: "/ncert" },
+      { icon: "🏥", label: "NEET Syllabus",path: "/neet" },
+      { icon: "⚗️",  label: "JEE Books",   path: "/jee" },
+    ],
   },
   {
     label: "Practice",
     items: [
-      { icon: "📝", label: "Mock Tests",     path: "/mock-tests" },
-      { icon: "🗂️", label: "Flashcards",    path: "/flashcards" },
-      { icon: "🎯", label: "Study Planner",  path: "/study-planner" },
-    ]
+      { icon: "📝", label: "Mock Tests",   path: "/mock-tests" },
+      { icon: "🗂️", label: "Flashcards",  path: "/flashcards" },
+      { icon: "🎯", label: "Planner",      path: "/study-planner" },
+    ],
   },
   {
     label: "Insights",
     items: [
-      { icon: "📊", label: "Analytics",      path: "/analytics" },
-      { icon: "📈", label: "Progress",       path: "/progress" },
-    ]
-  }
+      { icon: "📊", label: "Analytics",   path: "/analytics" },
+      { icon: "📈", label: "Progress",    path: "/progress" },
+    ],
+  },
+  {
+    label: "AI Tutor",
+    items: [
+      { icon: "🤖", label: "VIDYA AI",    path: "/vidya" },
+    ],
+  },
 ];
 
 export default function SideNav({ userName, onLogout, collapsed, setCollapsed }) {
@@ -50,9 +57,9 @@ export default function SideNav({ userName, onLogout, collapsed, setCollapsed })
         {collapsed ? "›" : "‹"}
       </button>
 
-      {/* Nav items */}
+      {/* Nav */}
       <nav className="sidenav-nav">
-        {NAV_SECTIONS.map(section => (
+        {NAV.map(section => (
           <div key={section.label} className="sidenav-section">
             {!collapsed && <div className="sidenav-section-label">{section.label}</div>}
             {section.items.map(item => (

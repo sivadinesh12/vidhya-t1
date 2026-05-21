@@ -1,20 +1,29 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import SideNav from "./SideNav";
-import VIDYAPage from "../pages/VIDYA";
 import "./PageLayout.css";
 
-export default function PageLayout({ userName, children, hideVidyaFab = false }) {
-  const navigate = useNavigate();
+export default function PageLayout({ userName, onLogout, children }) {
+  const navigate  = useNavigate();
+  const location  = useLocation();
   const [collapsed, setCollapsed] = useState(false);
-  const [vidyaOpen, setVidyaOpen] = useState(false);
-  const onLogout = () => navigate('/login');
+  const onVidya   = location.pathname === "/vidya";
+
+  const handleLogout = () => {
+    if (onLogout) {
+      onLogout();
+    } else {
+      localStorage.removeItem("vidhya_token");
+      localStorage.removeItem("vidhya_user");
+      navigate("/login");
+    }
+  };
 
   return (
     <div className="page-layout">
       <SideNav
         userName={userName}
-        onLogout={onLogout}
+        onLogout={handleLogout}
         collapsed={collapsed}
         setCollapsed={setCollapsed}
       />
@@ -22,35 +31,16 @@ export default function PageLayout({ userName, children, hideVidyaFab = false })
         {children}
       </div>
 
-      {/* Floating VIDYA AI Button */}
-      {!vidyaOpen && !hideVidyaFab && (
+      {/* Hide FAB when already on VIDYA page */}
+      {!onVidya && (
         <button
           className="vidya-fab"
-          onClick={() => setVidyaOpen(true)}
+          onClick={() => navigate("/vidya")}
           title="Open VIDYA AI"
-          aria-label="Open VIDYA AI"
         >
           <span className="vidya-fab-icon">🤖</span>
           <span className="vidya-fab-label">VIDYA AI</span>
         </button>
-      )}
-
-      {/* VIDYA AI Fullscreen Overlay */}
-      {vidyaOpen && (
-        <>
-          <div className="vidya-overlay-backdrop" onClick={() => setVidyaOpen(false)} />
-          <div className="vidya-drawer">
-            <button
-              className="vidya-close-btn"
-              onClick={() => setVidyaOpen(false)}
-              title="Close VIDYA AI"
-              aria-label="Close VIDYA AI"
-            >
-              ✕
-            </button>
-            <VIDYAPage userName={userName} isFloating hideVidyaFab />
-          </div>
-        </>
       )}
     </div>
   );

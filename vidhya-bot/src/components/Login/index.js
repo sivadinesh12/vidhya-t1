@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import { useNavigate } from "react-router-dom";
 import "./index.css";
+import vidyaLogo from "../../assets/logo.png";
 
 const API_URL = "http://localhost:5000/api/v1";
 
@@ -11,10 +12,10 @@ const saveSession = (token, user) => {
 };
 
 export default function Login({ onLogin }) {
-  const [email,    setEmail]    = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error,    setError]    = useState("");
-  const [loading,  setLoading]  = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleKeyDown = (e) => {
@@ -23,18 +24,18 @@ export default function Login({ onLogin }) {
 
   const handleSubmit = async () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email || !password)     { setError("Please enter your credentials."); return; }
+    if (!email || !password) { setError("Please enter your credentials."); return; }
     if (!emailRegex.test(email)) { setError("Please enter a valid email."); return; }
-    if (password.length < 4)     { setError("Password too short."); return; }
+    if (password.length < 4) { setError("Password too short."); return; }
 
     setError("");
     setLoading(true);
 
     try {
-      const res  = await fetch(`${API_URL}/auth/login`, {
-        method : "POST",
+      const res = await fetch(`${API_URL}/auth/login`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body   : JSON.stringify({ email: email.toLowerCase(), password }),
+        body: JSON.stringify({ email: email.toLowerCase(), password }),
       });
       const data = await res.json();
 
@@ -56,10 +57,10 @@ export default function Login({ onLogin }) {
     setLoading(true);
     setError("");
     try {
-      const res  = await fetch(`${API_URL}/auth/google`, {
-        method : "POST",
+      const res = await fetch(`${API_URL}/auth/google`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body   : JSON.stringify({ credential: credentialResponse.credential }),
+        body: JSON.stringify({ credential: credentialResponse.credential }),
       });
       const data = await res.json();
 
@@ -78,8 +79,6 @@ export default function Login({ onLogin }) {
   };
 
   const handleGoogleError = () => {
-    // Google OAuth errors usually mean the Client ID domain is not authorized.
-    // The user needs to add their domain to the Google Cloud Console.
     setError(
       "Google sign-in failed. Make sure http://localhost:3000 is added as an " +
       "Authorized JavaScript Origin in your Google Cloud Console for this Client ID."
@@ -91,13 +90,16 @@ export default function Login({ onLogin }) {
       {/* Left dark panel */}
       <div className="login-left">
         <div className="brand-badge">
-          <span className="brand-dot" />
-          <span>VIDHYA</span>
+          <img 
+            src={vidyaLogo} 
+            alt="Vidhya Logo" 
+            className="brand-logo-img" 
+          />
         </div>
         <h1 className="login-headline">
-          Master Every<br />
-          <em>Exam</em> with<br />
-          Confidence.
+          Your <br />
+          <em>Personal</em> AI <br />
+          Teacher
         </h1>
       </div>
 
@@ -122,6 +124,7 @@ export default function Login({ onLogin }) {
               placeholder="you@example.com"
               onChange={(e) => setEmail(e.target.value)}
               onKeyDown={handleKeyDown}
+              disabled={loading}
             />
           </div>
 
@@ -134,6 +137,7 @@ export default function Login({ onLogin }) {
               placeholder="••••••••"
               onChange={(e) => setPassword(e.target.value)}
               onKeyDown={handleKeyDown}
+              disabled={loading}
             />
           </div>
 
@@ -141,13 +145,14 @@ export default function Login({ onLogin }) {
             className="btn-primary"
             onClick={handleSubmit}
             disabled={loading}
+            style={{ opacity: loading ? 0.7 : 1, cursor: loading ? "not-allowed" : "pointer" }}
           >
             {loading ? "Signing in…" : "Sign In →"}
           </button>
 
           <div className="divider"><span>or continue with</span></div>
 
-          <div className="social-row">
+          <div className="social-row" style={{ display: "flex", justifyContent: "center", width: "100%" }}>
             <GoogleLogin
               onSuccess={handleGoogleSuccess}
               onError={handleGoogleError}

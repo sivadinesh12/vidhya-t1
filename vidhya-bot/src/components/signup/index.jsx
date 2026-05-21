@@ -1,239 +1,184 @@
 import React, { useState } from "react";
-import { useGoogleLogin } from "@react-oauth/google";
-import { useNavigate } from "react-router-dom"; 
-import vidyaLogo from "../assets/logo.png"; // Imported the logo
-import "./index.css"; 
+import { useNavigate } from "react-router-dom";
+import "./index.css";
+import vidyaLogo from "../../assets/logo.png";
+const API_URL = "http://localhost:5000/api/v1";
 
-export default function Signup() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [mobile, setMobile] = useState(""); 
-  const [educationLevel, setEducationLevel] = useState(""); 
-  
-  // New states for conditional dropdowns
-  const [schoolClass, setSchoolClass] = useState("");
-  const [schoolBoard, setSchoolBoard] = useState(""); // State for CBSE / TN State
-  const [collegeDepartment, setCollegeDepartment] = useState("");
+const saveSession = (token, user) => {
+  localStorage.setItem("vidhya_token", token);
+  localStorage.setItem("vidhya_user", JSON.stringify(user));
+};
 
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [isSuccess, setIsSuccess] = useState(false);
+export default function Signup({ onLogin }) {
+  const [name,             setName]             = useState("");
+  const [email,            setEmail]            = useState("");
+  const [mobile,           setMobile]           = useState("");
+  const [educationLevel,   setEducationLevel]   = useState("");
+  const [schoolClass,      setSchoolClass]      = useState("");
+  const [schoolBoard,      setSchoolBoard]      = useState("");
+  const [collegeDepartment,setCollegeDepartment]= useState("");
+  const [password,         setPassword]         = useState("");
+  const [error,            setError]            = useState("");
+  const [loading,          setLoading]          = useState(false);
   const navigate = useNavigate();
 
-  // Handle main education level change to reset sub-selections
   const handleEducationChange = (e) => {
     setEducationLevel(e.target.value);
-    setSchoolClass("");
-    setSchoolBoard("");
-    setCollegeDepartment("");
+    setSchoolClass(""); setSchoolBoard(""); setCollegeDepartment("");
   };
 
-  // --- STANDARD SIGNUP ---
-  const handleSignup = (e) => {
+  // Map our educationLevel to the backend's TargetExam enum
+  const getTargetExam = () => {
+    if (educationLevel === "neet")    return "NEET";
+    if (educationLevel === "jee")     return "JEE_MAINS";
+    if (educationLevel === "college") return "OTHER";
+    return "BOARDS"; // school
+  };
+
+  const handleSignup = async (e) => {
     e.preventDefault();
-    
-    // Basic field validation
     if (!name || !email || !mobile || !password || !educationLevel) {
-      setError("Please fill in all basic fields.");
-      return;
+      setError("Please fill in all required fields."); return;
     }
-
-    // Conditional field validation
-    if (educationLevel === "school") {
-      if (!schoolClass) {
-        setError("Please select your class.");
-        return;
-      }
-      if (!schoolBoard) {
-        setError("Please select your syllabus board.");
-        return;
-      }
+    if (educationLevel === "school" && (!schoolClass || !schoolBoard)) {
+      setError("Please select your syllabus and class."); return;
     }
-    
     if (educationLevel === "college" && !collegeDepartment) {
-      setError("Please select your department category.");
-      return;
+      setError("Please select your department."); return;
     }
-
-    // Basic 10-digit mobile number validation
-    const mobileRegex = /^[0-9]{10}$/;
-    if (!mobileRegex.test(mobile)) {
-      setError("Please enter a valid 10-digit mobile number.");
-      return;
+    if (!/^[0-9]{10}$/.test(mobile)) {
+      setError("Please enter a valid 10-digit mobile number."); return;
     }
-
     if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
-      return;
+      setError("Password must be at least 6 characters."); return;
     }
-    
-    // Logic to save user would go here.
-    const signupData = { 
-      name, 
-      email, 
-      mobile, 
-      password, 
-      educationLevel,
-      // Only include sub-data if relevant
-      ...(educationLevel === "school" && { schoolClass, schoolBoard }),
-      ...(educationLevel === "college" && { collegeDepartment })
-    };
 
-    console.log("Signup Data:", signupData);
     setError("");
-    setIsSuccess(true);
-    navigate("/home"); 
+    setLoading(true);
+
+    try {
+      const res = await fetch(`${API_URL}/auth/signup`, {
+        method : "POST",
+        headers: { "Content-Type": "application/json" },
+        body   : JSON.stringify({
+          name,
+          email       : email.toLowerCase(),
+          password,
+          target_exam : getTargetExam(),
+        }),
+      });
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        saveSession(data.data.token, data.data.user);
+        if (onLogin) onLogin(data.data.user.name);
+        navigate("/home");
+      } else {
+        setError(data.detail || data.message || "Signup failed. Please try again.");
+      }
+    } catch {
+      setError("Cannot reach server. Make sure your Python backend is running on port 5000.");
+    } finally {
+      setLoading(false);
+    }
   };
-
-  // --- GOOGLE SIGNUP HANDLER ---
-  const googleSignup = useGoogleLogin({
-    onSuccess: (tokenResponse) => {
-      console.log("Google Signup Success:", tokenResponse);
-      // In a real app, send this token to your backend to create the user
-      setError("");
-      setIsSuccess(true);
-    },
-    onError: () => {
-      console.error("Google Signup Failed");
-      setError("Google Signup failed. Please try again.");
-    },
-  });
-
-  if (isSuccess) {
-    return (
-      <div className="login-wrap" style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
-        <div className="login-card" style={{textAlign: 'center'}}>
-          <h2>Welcome to the family! 🎉</h2>
-          <p>Your account for <strong>vidya</strong> has been created. You can now close this tab and log in.</p>
-          <button className="btn-primary" style={{marginTop: '20px'}} onClick={() => window.close()}>Close Tab</button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="login-wrap">
+      {/* Left panel */}
       <div className="login-left">
-        {/* UPDATED LOGO SECTION */}
         <div className="brand-badge">
-          <img 
-            src={vidyaLogo} 
-            alt="Vidhya Logo" 
-            className="brand-logo-img" 
-          />
+          <div className="brand-badge">
+                    <img 
+                      src={vidyaLogo} 
+                      alt="Vidhya Logo" 
+                      className="brand-logo-img" 
+                    />
+                  </div>
         </div>
-        <h1 className="login-headline">Start Your<br /><em>Success</em><br />Story.</h1>
-        <p className="login-sub">Join thousands of students and get access to curated study materials, mock tests, and analytics.</p>
+        <h1 className="login-headline">Start Your<br /><em>Success</em><br />Story Today.</h1>
+        <p className="login-sub">Join thousands of students preparing for NEET, JEE and Board exams.</p>
       </div>
 
+      {/* Right panel */}
       <div className="login-right">
         <div className="login-card fade-up">
           <h2>Create Account ✨</h2>
-          <p className="subtitle">Join vidya and start learning today.</p>
+          <p>Join VIDYA and start learning today.</p>
 
-          {error && <div className="error-banner" style={{ background: "#fadbd8", border: "1px solid #f1948a", borderRadius: 8, padding: "10px 14px", marginBottom: 16, color: "#c0392b", fontSize: 13, fontWeight: 500 }}>{error}</div>}
+          {error && (
+            <div className="error-banner">⚠️ {error}</div>
+          )}
 
           <form onSubmit={handleSignup}>
             <div className="form-group">
-              <label className="form-label">Full Name</label>
-              <input 
-                className="form-input" 
-                placeholder="Enter your name" 
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
+              <label className="form-label">FULL NAME</label>
+              <input className="form-input" placeholder="Enter your name"
+                value={name} onChange={e => setName(e.target.value)} />
             </div>
 
             <div className="form-group">
-              <label className="form-label">Email Address</label>
-              <input 
-                className="form-input" 
-                type="email" 
-                placeholder="student@example.com" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+              <label className="form-label">EMAIL ADDRESS</label>
+              <input className="form-input" type="email" placeholder="you@example.com"
+                value={email} onChange={e => setEmail(e.target.value)} />
             </div>
 
             <div className="form-group">
-              <label className="form-label">Mobile Number</label>
-              <input 
-                className="form-input" 
-                type="tel" 
-                placeholder="Enter 10-digit mobile number" 
+              <label className="form-label">MOBILE NUMBER</label>
+              <input className="form-input" type="tel" placeholder="10-digit number"
                 value={mobile}
-                onChange={(e) => setMobile(e.target.value.replace(/\D/g, ""))} 
-                maxLength="10"
-              />
+                onChange={e => setMobile(e.target.value.replace(/\D/g, ""))}
+                maxLength="10" />
             </div>
 
             <div className="form-group">
-              <label className="form-label">What are you studying for?</label>
-              <select 
-                className="form-input" 
-                value={educationLevel}
+              <label className="form-label">STUDYING FOR</label>
+              <select className="form-input" value={educationLevel}
                 onChange={handleEducationChange}
-                style={{ cursor: "pointer", appearance: "auto" }} 
-              >
+                style={{ cursor:"pointer", appearance:"auto" }}>
                 <option value="" disabled>Select an option</option>
-                <option value="school">School</option>
+                <option value="school">School (Class 6–12)</option>
                 <option value="college">College</option>
                 <option value="neet">NEET</option>
                 <option value="jee">JEE</option>
               </select>
             </div>
 
-            {/* CONDITIONAL DROPDOWNS: SCHOOL */}
             {educationLevel === "school" && (
               <>
                 <div className="form-group fade-up">
-                  <label className="form-label">Select Syllabus</label>
-                  <select 
-                    className="form-input" 
-                    value={schoolBoard}
-                    onChange={(e) => setSchoolBoard(e.target.value)}
-                    style={{ cursor: "pointer", appearance: "auto" }} 
-                  >
-                    <option value="" disabled>Choose your syllabus</option>
+                  <label className="form-label">SYLLABUS</label>
+                  <select className="form-input" value={schoolBoard}
+                    onChange={e => setSchoolBoard(e.target.value)}
+                    style={{ cursor:"pointer", appearance:"auto" }}>
+                    <option value="" disabled>Choose syllabus</option>
                     <option value="cbse">CBSE</option>
                     <option value="tn_state">TN State Syllabus</option>
                   </select>
                 </div>
-
                 <div className="form-group fade-up">
-                  <label className="form-label">Select Class</label>
-                  <select 
-                    className="form-input" 
-                    value={schoolClass}
-                    onChange={(e) => setSchoolClass(e.target.value)}
-                    style={{ cursor: "pointer", appearance: "auto" }} 
-                  >
-                    <option value="" disabled>Choose your class</option>
-                    <option value="6th">6th Standard</option>
-                    <option value="7th">7th Standard</option>
-                    <option value="8th">8th Standard</option>
-                    <option value="9th">9th Standard</option>
-                    <option value="10th">10th Standard</option>
-                    <option value="11th">11th Standard</option>
-                    <option value="12th">12th Standard</option>
+                  <label className="form-label">CLASS</label>
+                  <select className="form-input" value={schoolClass}
+                    onChange={e => setSchoolClass(e.target.value)}
+                    style={{ cursor:"pointer", appearance:"auto" }}>
+                    <option value="" disabled>Choose class</option>
+                    {["6th","7th","8th","9th","10th","11th","12th"].map(c =>
+                      <option key={c} value={c}>{c} Standard</option>
+                    )}
                   </select>
                 </div>
               </>
             )}
 
-            {/* CONDITIONAL DROPDOWN: COLLEGE */}
             {educationLevel === "college" && (
               <div className="form-group fade-up">
-                <label className="form-label">Select Department Category</label>
-                <select 
-                  className="form-input" 
-                  value={collegeDepartment}
-                  onChange={(e) => setCollegeDepartment(e.target.value)}
-                  style={{ cursor: "pointer", appearance: "auto" }} 
-                >
-                  <option value="" disabled>Choose your department</option>
+                <label className="form-label">DEPARTMENT</label>
+                <select className="form-input" value={collegeDepartment}
+                  onChange={e => setCollegeDepartment(e.target.value)}
+                  style={{ cursor:"pointer", appearance:"auto" }}>
+                  <option value="" disabled>Choose department</option>
                   <option value="engineering">Engineering / Technology</option>
-                  <option value="arts_science">Arts & Science</option>
+                  <option value="arts_science">Arts &amp; Science</option>
                   <option value="commerce">Commerce / Management</option>
                   <option value="medical">Medical / Health Sciences</option>
                   <option value="law">Law</option>
@@ -242,39 +187,21 @@ export default function Signup() {
             )}
 
             <div className="form-group">
-              <label className="form-label">Create Password</label>
-              <input 
-                className="form-input" 
-                type="password" 
-                placeholder="••••••••" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+              <label className="form-label">PASSWORD</label>
+              <input className="form-input" type="password" placeholder="Min 6 characters"
+                value={password} onChange={e => setPassword(e.target.value)} />
             </div>
 
-            <button type="submit" className="btn-primary">Create Free Account 🚀</button>
+            <button type="submit" className="btn-primary"
+              style={{ width:"100%", justifyContent:"center" }}
+              disabled={loading}>
+              {loading ? "Creating account…" : "Create Free Account 🚀"}
+            </button>
           </form>
 
-          <div className="divider">or continue with</div>
-
-          {/* Social Logins Container */}
-          <div style={{ display: 'flex', marginBottom: '20px' }}>
-            
-            {/* GOOGLE BUTTON */}
-            <button type="button" className="btn-secondary" style={{ flex: 1 }} onClick={() => googleSignup()}>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="18" height="18">
-                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.7 17.74 9.5 24 9.5z"/>
-                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-              </svg>
-              Google
-            </button>
-
-          </div>
-
-          <div className="signup-row">
-            Already have an account? <a href="/">Sign In instead</a>
+          <div className="signup-row" style={{ marginTop:20, textAlign:"center" }}>
+            Already have an account?{" "}
+            <button className="link-btn" onClick={() => navigate("/login")}>Sign In →</button>
           </div>
         </div>
       </div>

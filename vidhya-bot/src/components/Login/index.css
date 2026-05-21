@@ -27,18 +27,29 @@
   background: radial-gradient(circle, rgba(20,80,60,0.35) 0%, transparent 70%);
   pointer-events: none;
 }
-
+/* --- SINGLE REPLACEMENT FOR ALL BRAND-BADGE STYLES --- */
 .brand-badge {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 64px;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  color: rgba(255,255,255,0.7);
+  gap: 12px;
+  background: transparent !important; /* Forces no background */
+  border: none !important;           /* Forces no border */
+  padding: 0;
+  margin-bottom: 36px;
+  width: fit-content;
+  box-shadow: none;                  /* Removes any hidden shadows */
 }
 
+.brand-logo-img {
+  /* Increase this from 48px/65px to a larger value until it looks right */
+  height: 250px; 
+  width: auto;
+  display: block;
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* Remove or comment out any ".brand-badge span" or ".brand-badge-dot" 
+   styles as they are no longer needed for an image-based logo */
 .brand-dot {
   width: 9px; height: 9px;
   border-radius: 50%;
@@ -48,13 +59,14 @@
 
 .login-headline {
   font-family: 'Playfair Display', Georgia, serif;
-  font-size: 52px;
+  font-size: 46px; /* Reduced from 52px */
   font-weight: 900;
-  line-height: 1.08;
+  line-height: 1.2; /* Slightly increased for better readability at this size */
   color: #ffffff;
-  letter-spacing: -1px;
+  letter-spacing: -0.5px; /* Softened the letter spacing */
 }
 
+/* Ensure the gold italic text stays intact */
 .login-headline em {
   font-style: italic;
   color: #c9922a;
@@ -62,21 +74,23 @@
 
 /* Right cream panel */
 .login-right {
-  background: #f5f0e8;
   display: flex;
-  align-items: center;
+  /* align-items: center;  <-- REMOVE THIS. It breaks scrolling on long forms */
   justify-content: center;
-  padding: 40px 32px;
+  padding: 60px 48px;
+  background: linear-gradient(135deg, #ffffff 0%, #bae6fd 100%) !important; 
+  position: relative;
+  overflow-y: auto; /* Adds a scrollbar ONLY to this side when needed */
+  height: 100%;
 }
 
 .login-card {
   width: 100%;
   max-width: 420px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  position: relative;
+  z-index: 1;
+  margin: auto 0; /* Centers it vertically when there is extra space */
 }
-
 .login-card h2 {
   font-family: 'Playfair Display', Georgia, serif;
   font-size: 32px;

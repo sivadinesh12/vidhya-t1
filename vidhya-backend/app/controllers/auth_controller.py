@@ -1,7 +1,7 @@
 """
 app/controllers/auth_controller.py  -  Authentication Controller
 Handles: signup, login, Google OAuth, get_me, logout
-Saves ALL login sessions to MongoDB with full user details.
+All login sessions saved to MongoDB.
 """
 from datetime import datetime
 from fastapi import HTTPException
@@ -48,7 +48,7 @@ async def signup(body: UserSignupSchema):
     if existing:
         raise HTTPException(status_code=409, detail="An account with this email already exists.")
 
-    # Create user — password is hashed in set_password()
+    # Create user — password hashed in set_password()
     user = User(
         name        = body.name,
         email       = body.email.lower(),
@@ -77,7 +77,6 @@ async def signup(body: UserSignupSchema):
 
 # ── POST /api/v1/auth/login ───────────────────────────────────────────────────
 async def login(body: UserLoginSchema):
-    # Find user by email
     user = await User.find_one(User.email == body.email.lower())
 
     if not user or not user.verify_password(body.password):
@@ -106,13 +105,15 @@ async def google_auth(body: GoogleAuthSchema):
     if not settings.GOOGLE_CLIENT_ID:
         raise HTTPException(status_code=500, detail="Google OAuth not configured on server.")
 
-    # Verify Google token
     try:
         from google.oauth2 import id_token
         from google.auth.transport import requests as google_requests
+        import requests as req_lib
+
+        request_session = google_requests.Request(session=req_lib.Session())
         info = id_token.verify_oauth2_token(
             body.credential,
-            google_requests.Request(),
+            request_session,
             settings.GOOGLE_CLIENT_ID,
         )
     except Exception as e:
@@ -125,11 +126,9 @@ async def google_auth(body: GoogleAuthSchema):
     picture   = info.get("picture")
     is_new    = False
 
-    # Find existing user by Google ID or email
     user = await User.find_one({"$or": [{"google_id": google_id}, {"email": email}]})
 
     if user:
-        # Update Google link if not linked yet
         if not user.google_id:
             user.google_id = google_id
         if picture and not user.avatar:
@@ -138,7 +137,6 @@ async def google_auth(body: GoogleAuthSchema):
         user.updated_at = datetime.utcnow()
         await user.save()
     else:
-        # First time Google login — auto-create account
         is_new = True
         user = User(
             name       = name,
@@ -154,7 +152,6 @@ async def google_auth(body: GoogleAuthSchema):
         await _send_welcome_notification(str(user.id), user.name)
 
     token = create_access_token(str(user.id), user.role, user.email)
-
     logger.info(f"✅ Google auth: {user.email} | new={is_new}")
 
     return success_response(
@@ -170,11 +167,6 @@ async def get_me(current_user: User):
 
 # ── POST /api/v1/auth/logout ──────────────────────────────────────────────────
 async def logout(current_user: User):
-    """
-    Record logout time. Token invalidation happens client-side
-    (remove from localStorage). For full server-side invalidation,
-    add a token blacklist (Redis recommended).
-    """
     current_user.updated_at = datetime.utcnow()
     await current_user.save()
     logger.info(f"👋 Logout: {current_user.email}")

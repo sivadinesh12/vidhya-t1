@@ -1,8 +1,9 @@
 /* We reuse the core layout classes from the login page */
 .login-wrap {
-  min-height: 100vh;
+  height: 100vh; 
   display: grid;
   grid-template-columns: 1fr 1fr;
+  overflow: hidden; 
 }
 
 .login-left.signup-left {
@@ -34,17 +35,28 @@
 }
 
 /* The rest is identical to ensure layout consistency */
+/* --- BRAND LOGO CONTAINER --- */
 .brand-badge {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  background: rgba(255,255,255,0.15);
-  border: 1px solid rgba(255,255,255,0.3);
-  border-radius: 40px;
-  padding: 8px 18px;
-  margin-bottom: 36px;
+  background: transparent !important; /* Removes the white container tint */
+  border: none !important;           /* Removes the unwanted border box */
+  padding: 0;                        /* Resets padding so it aligns with the headline edge */
+  margin-bottom: 40px;               /* Clean breathing space above the headline */
   width: fit-content;
 }
+
+/* --- BRAND LOGO IMAGE SIZE & EFFECT --- */
+.brand-logo-img {
+  height: 250px;                      /* Matches the normalized size from your login screen */
+  width: auto;
+  display: block;
+  filter: invert(1) hue-rotate(180deg); /* Turns the embedded black text white cleanly */
+}
+
+/* --- CLEANUP UNUSED BADGE STYLES --- */
+/* You can safely delete or comment out .brand-badge-dot and .brand-badge span 
+   since the logo image handles both the icon and text now */
 
 .brand-badge-dot {
   width: 8px; height: 8px;

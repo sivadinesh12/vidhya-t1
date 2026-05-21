@@ -122,7 +122,7 @@ function fileToBase64(file) {
 }
 
 // ── Component ──────────────────────────────────────────────────────────────
-export default function VIDYAPage({ userName, hideVidyaFab = false }) {
+export default function VIDYAPage({ userName, onLogout }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -343,7 +343,7 @@ export default function VIDYAPage({ userName, hideVidyaFab = false }) {
   const accentStyle = { "--vidya-accent": VIDYA.color, "--vidya-accent-rgb": VIDYA.colorRGB };
 
   return (
-    <PageLayout userName={userName} hideVidyaFab={hideVidyaFab}>
+    <PageLayout userName={userName} onLogout={onLogout}>
       <div className="vidya-root" style={accentStyle}>
 
         {/* ── API Key Prompt ── */}

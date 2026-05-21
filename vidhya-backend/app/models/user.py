@@ -1,19 +1,21 @@
-""""
+"""
 app/models/user.py  -  User Document Model (Beanie ODM)
 Passwords stored as bcrypt hashes. Never plain text.
+Uses bcrypt directly (no passlib) to avoid version conflicts.
 """
 from typing import Optional
 from datetime import datetime
 from enum import Enum
+import bcrypt
+
 from beanie import Document, Indexed
 from pydantic import BaseModel, EmailStr, Field
-from passlib.context import CryptContext
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class Role(str, Enum):
     user  = "user"
     admin = "admin"
+
 
 class TargetExam(str, Enum):
     NEET         = "NEET"
@@ -21,6 +23,7 @@ class TargetExam(str, Enum):
     JEE_ADVANCED = "JEE_ADVANCED"
     BOARDS       = "BOARDS"
     OTHER        = "OTHER"
+
 
 class User(Document):
     name        : str = Field(..., min_length=2, max_length=60)
@@ -41,27 +44,36 @@ class User(Document):
         name = "users"
 
     def set_password(self, plain: str):
-        self.password = pwd_context.hash(plain)
+        """Hash password using bcrypt directly."""
+        password_bytes = plain.encode("utf-8")
+        salt = bcrypt.gensalt()
+        hashed = bcrypt.hashpw(password_bytes, salt)
+        self.password = hashed.decode("utf-8")
 
     def verify_password(self, plain: str) -> bool:
+        """Verify a plain password against the stored hash."""
         if not self.password:
             return False
-        return pwd_context.verify(plain, self.password)
+        return bcrypt.checkpw(
+            plain.encode("utf-8"),
+            self.password.encode("utf-8")
+        )
 
     def to_safe_dict(self) -> dict:
-        data = {}
-        data["id"] = str(self.id)
-        data["name"] = self.name
-        data["email"] = self.email
-        data["role"] = self.role.value if hasattr(self.role, "value") else self.role
-        data["avatar"] = self.avatar
-        data["target_exam"] = self.target_exam.value if self.target_exam and hasattr(self.target_exam, "value") else self.target_exam
-        data["target_year"] = self.target_year
-        data["is_active"] = self.is_active
-        data["last_login"] = self.last_login.isoformat() if self.last_login else None
-        data["created_at"] = self.created_at.isoformat() if self.created_at else None
-        data["updated_at"] = self.updated_at.isoformat() if self.updated_at else None
-        return data
+        return {
+            "id"          : str(self.id),
+            "name"        : self.name,
+            "email"       : self.email,
+            "role"        : self.role.value if hasattr(self.role, "value") else self.role,
+            "avatar"      : self.avatar,
+            "target_exam" : self.target_exam.value if self.target_exam and hasattr(self.target_exam, "value") else self.target_exam,
+            "target_year" : self.target_year,
+            "is_active"   : self.is_active,
+            "last_login"  : self.last_login.isoformat() if self.last_login else None,
+            "created_at"  : self.created_at.isoformat() if self.created_at else None,
+            "updated_at"  : self.updated_at.isoformat() if self.updated_at else None,
+        }
+
 
 # ── Request/Response schemas ──────────────────────────────────────────────────
 class UserSignupSchema(BaseModel):
@@ -71,17 +83,22 @@ class UserSignupSchema(BaseModel):
     target_exam : Optional[TargetExam] = TargetExam.NEET
     target_year : Optional[int] = Field(default=None, ge=2024, le=2030)
 
+
 class UserLoginSchema(BaseModel):
     email    : EmailStr
     password : str
 
+
 class GoogleAuthSchema(BaseModel):
     credential: str
+
 
 class UserUpdateSchema(BaseModel):
     name        : Optional[str] = Field(default=None, min_length=2, max_length=60)
     target_exam : Optional[TargetExam] = None
     target_year : Optional[int] = Field(default=None, ge=2024, le=2030)
+    avatar      : Optional[str] = None
+
 
 class RoleUpdateSchema(BaseModel):
     role: Role

@@ -19,7 +19,15 @@ from app.config.database import connect_db, disconnect_db
 from app.routes import auth, users, flashcards, study_plans, progress, uploads
 from app.routes import chat, mock_tests, notifications, password_reset, analytics
 
-limiter = Limiter(key_func=get_remote_address, default_limits=[settings.RATE_LIMIT])
+
+def rate_limit_key(request: Request):
+    if request.method == "OPTIONS":
+        return None  # skip rate limiting for CORS preflight
+    return get_remote_address(request)
+
+
+limiter = Limiter(key_func=rate_limit_key, default_limits=[settings.RATE_LIMIT])
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
